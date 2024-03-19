@@ -64,6 +64,32 @@ class EllipticCurve():
     def fast_multiply(self, d):
         pass
 
+    def add(self, pointG, pointQ):
+        if pointG == pointQ:
+            returnValue = self.double(pointG)
+        elif pointG == EllipticCurve.POINT_AT_INFINITY:
+            returnValue = pointQ
+        elif pointQ == EllipticCurve.POINT_AT_INFINITY:
+            returnValue = pointG
+        else:
+            s = ((pointQ.get_y() - pointG.get_y()) % self._p) * (
+                self.mod_inverse(pointQ.get_x() - pointG.get_x(), self._p))
+            Rx = (s * s - pointG.get_x() - pointQ.get_x()) % self._p
+            Ry = (s * (pointG.get_x() - Rx) - pointG.get_y()) % self._p
+            returnValue = Point(Rx, Ry)
+            return returnValue
+
+    def double(self, pointG):
+        if self._pointG == EllipticCurve.POINT_AT_INFINITY:
+            returnValue = self.pointG
+        else:
+            s = (3 * pow(pointG.get_x(), 2, self._p) + self._a) % self._p * \
+                self.mod_inverse(2 * pointG.get_y(), self._p)
+            Rx = (s * s - pointG.get_x() - pointG.get_x()) % self._p
+            Ry = (s * (pointG.get_x() - Rx) - pointG.get_y()) % self._p
+            returnValue = Point(Rx, Ry)
+            return returnValue
+
     def is_point_on_curve(self, pointG: Point):
         return (pointG.get_y() * pointG.get_y()) % self._p == \
             (pointG.get_x() * pointG.get_x() * pointG.get_x() + (self._a * pointG.get_x() + self._b)) % self._p
@@ -103,9 +129,26 @@ class EllipticCurve():
     def count_numb_of_points_in_cyclic_subgroup(self):
         pass
 
+    def get_n(self):
+        return self._n
+
+    def mod_inverse(self, c, p):
+        inverse = -1
+        for numb in range(1, p):
+            if ((c % p) * (numb % p)) % p == 1:
+                inverse = numb
+                break
+        return inverse
+
     @staticmethod
     def is_non_singular(a, b):
         return not (-16) * (4 * a * a * a + 27 * b + b) == 0
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return "y^2 <congruent> x^3 + " + str(self._a) + "x + " + str(self._b) + " mod " + str(self._p)
 
 
 class Driver():
@@ -184,7 +227,21 @@ class Driver():
         return flag
 
     def handle_point_hopping_input(self, type, ec: EllipticCurve):
-        pass
+        while True:
+            try:
+                d = int(input("> please enter # of point hops d\n"))
+                if type == "slow":
+                    ec.slow_multiply(d)
+                    break
+                elif type == "fast":
+                    if d == ec.get_n():
+                        ec.fast_multiply(d)
+                        break
+                    else:
+                        print("# of Point hops d must be <= " + str(
+                            ec.get_n()) + " (i.e. n, the # of points in cyclic subgroup)")
+            except:
+                print("invalid input. ")
 
 
 Driver.run_app()
