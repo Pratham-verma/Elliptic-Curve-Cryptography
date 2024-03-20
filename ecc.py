@@ -59,10 +59,63 @@ class EllipticCurve():
         return flag
 
     def slow_multiply(self, d):  # only use w/ small cyclic subgroups
-        pass
+        hopsTable = prettytable.PrettyTable()
+        hopsTable.header = False
+        hops = [];
+        hop = []
+        i = 1
+        pointT = EllipticCurve.POINT_AT_INFINITY
+        while (i <= d):
+            if not self.is_inverse(self._pointg, pointT):
+                if self.pointG == pointT:
+                    pointT = self.double(self._pointG)
+                else:
+                    pointT = self.add(self._pointG, pointT)
+                hop.append(str(i) + str(self._pointG) + "=" + str(pointT))
+            else:
+                pointT = EllipticCurve.POINT_AT_INFINITY
+                hop.append(str(i) + str(self._pointG) + "=" + str(pointT))
+                hops.append(hop)
+                hop = []
+            if i == d: hops.append(hop)
+            i = i + 1
+            self.add_rows_to_table(d, hopsTable, hops)
+            print(hopsTable)
+            self.display_result(d, self._pointG, pointT)
+            return pointT
 
     def fast_multiply(self, d):
-        pass
+        table = prettytable.PrettyTable(["step#", "bit", "double", "& add (bit = 1)"])
+        baseChangeStr = ""
+        pointT = EllipticCurve.POINT_AT_INFINITY
+        if d < self._n:
+            dInBinary = str(bin(d).replace("0b" , ""))
+            baseChangeStr = baseChangeStr + str(d) + "|Base10 = " + dInBinary + "|Base2"
+            table.add_row(["[0]", "1", "[0G + 0G = 0G]", "[0G + 1G = 1G]"])
+            pointT = Point(self.pointG.get_x(), self._pointG.get_y())
+            q = 1;
+            p = 1
+            for i in range(1, len(dInBinary)):
+                bit = int(dInBinary[i])
+                row = [str(i), str(bit)]
+                rowContent = str(q) + "G+" + str(q) + "G="
+                q = q + q
+                rowContent = rowContent + str(q) + "G"
+                row.append(rowContent)
+                pointT = self.double(pointT)
+                if bit == 1:
+                    rowContent = " " + str(q) + "G+" + str(p) + "G="
+                    q = q + p
+                    rowContent = rowContent + str(q) + "G"
+                    row.append(rowContent)
+                    pointT = self.add(self._pointG, pointT)
+                else:
+                    row.append("")
+                table.add_row(row)
+            print(baseChangeStr)
+            print(table)
+            self.display_result(d, self._pointG, pointT)
+            return pointT
 
     def add(self, pointG, pointQ):
         if pointG == pointQ:
@@ -127,7 +180,19 @@ class EllipticCurve():
         return allPoints
 
     def count_numb_of_points_in_cyclic_subgroup(self):
-        pass
+        n = 1
+        pointT = EllipticCurve.POINT_AT_INFINITY
+        while n < self._orderE:
+            if not self.is_inverse(self._pointG, pointT):
+                if self.pointG == pointT:
+                    pointT = self.double(self._pointG)
+                else:
+                    pointT = self.add(self._pointG, pointT)
+            else:
+                break
+            n = n + 1
+        return n
+
 
     def get_n(self):
         return self._n
