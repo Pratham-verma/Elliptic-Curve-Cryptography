@@ -84,12 +84,13 @@ class EllipticCurve():
             self.display_result(d, self._pointG, pointT)
             return pointT
 
+
     def fast_multiply(self, d):
         table = prettytable.PrettyTable(["step#", "bit", "double", "& add (bit = 1)"])
         baseChangeStr = ""
         pointT = EllipticCurve.POINT_AT_INFINITY
         if d < self._n:
-            dInBinary = str(bin(d).replace("0b" , ""))
+            dInBinary = str(bin(d).replace("0b", ""))
             baseChangeStr = baseChangeStr + str(d) + "|Base10 = " + dInBinary + "|Base2"
             table.add_row(["[0]", "1", "[0G + 0G = 0G]", "[0G + 1G = 1G]"])
             pointT = Point(self.pointG.get_x(), self._pointG.get_y())
@@ -193,6 +194,25 @@ class EllipticCurve():
             n = n + 1
         return n
 
+    def display_points_matching_table(self, leftSide, rightSide):
+        formula = str(self)
+        formulaLength = len(formula) - 10
+        table = prettytable.PrettyTable(["y", formula, "x"])
+        for x in range(0, len(leftSide)):
+            table.add_row(
+                [str(x), str(f'{leftSide[x]:05d}') + (' ' * formulaLength) + str(f'{rightSide[x]:05}'), str(x)])
+        print(table)
+
+    def display_all_points_on_curve(self, allPoints, pointsTable):
+        print("Found " + str(len(allPoints)) + " Points satisfying E: " + str(self))
+        pointsTable.header = False
+        print(pointsTable)
+
+    def display_result(self, d, pointG, pointT):
+        table = prettytable.PrettyTable()
+        table.header = False
+        table.add_row(["dG=" + str(d) + str(pointG) + "=" + str(pointT)])
+        print(table)
 
     def get_n(self):
         return self._n
