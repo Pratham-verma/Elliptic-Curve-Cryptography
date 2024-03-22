@@ -5,3 +5,4 @@ The [**Elliptic Curve Cryptography (ECC)**](https://en.wikipedia.org/wiki/Ellipt
 **ECC** implements all major capabilities of the asymmetric cryptosystems: **encryption**, **signatures** and **key exchange**.
 
 The **ECC cryptography** is considered a natural modern **successor of the RSA** cryptosystem, because ECC uses **smaller keys** and signatures than RSA for the same level of security and provides very **fast key generation**, **fast key agreement** and **fast signatures**.
+
