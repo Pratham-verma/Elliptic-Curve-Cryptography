@@ -23,7 +23,7 @@ Cryptography uses **elliptic curves** in a simplified form (Weierstras form), wh
 
 This is a visualization of the above elliptic curve:
 
-<img src="https://miro.medium.com/v2/resize:fit:828/format:webp/1*RgWr7PkfeDQZjsE05o533Q.gif" alt="ECC Visualization" width="300" height="300">
+<img src="https://miro.medium.com/v2/resize:fit:828/format:webp/1*RgWr7PkfeDQZjsE05o533Q.gif" alt="ECC Visualization" width="600" height="300">
 
 ### Elliptic Curves over Finite Fields
 
