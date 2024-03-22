@@ -23,3 +23,4 @@ Cryptography uses **elliptic curves** in a simplified form (Weierstras form), wh
 
 This is a visualization of the above elliptic curve:
 
+![](assets/elliptic-curve.png)
