@@ -16,20 +16,18 @@ class Point():
         return self.__str__()
 
     def __str__(self):
-        returnValue = "0"
-
         if self._y != EllipticCurve.INFINITY:
-            returnValue = "(" + str(self._x) + "," + str(self._y) + ")"
-            return returnValue
+            return f"({self._x}, {self._y})"
+        else:
+            return "Infinity"
 
     def __eq__(self, o: object):
-        returnFlag = False
         if isinstance(o, Point):
-            if o._x == self._x and o._y == self._y: returnFlag = True
-        return returnFlag
+            return o._x == self._x and o._y == self._y
+        return False
 
     def __hash__(self):
-        return hash(self._x, self._y)
+        return hash((self._x, self._y))
 
 
 class EllipticCurve():
@@ -41,9 +39,9 @@ class EllipticCurve():
         self._b = int(b)
         self._p = int(p)
         self.allPoints = self.find_all_points_on_curve()
-        self.orderE = len(self.allPoints)
+        self._orderE = len(self.allPoints)
         self._h = None
-        self.pointG = None
+        self._pointG = None
         self._n = None
 
     def update(self, pointG):
@@ -66,8 +64,8 @@ class EllipticCurve():
         i = 1
         pointT = EllipticCurve.POINT_AT_INFINITY
         while (i <= d):
-            if not self.is_inverse(self._pointg, pointT):
-                if self.pointG == pointT:
+            if not self.is_inverse(self._pointG, pointT):
+                if self._pointG == pointT:
                     pointT = self.double(self._pointG)
                 else:
                     pointT = self.add(self._pointG, pointT)
@@ -79,11 +77,24 @@ class EllipticCurve():
                 hop = []
             if i == d: hops.append(hop)
             i = i + 1
-            self.add_rows_to_table(d, hopsTable, hops)
-            print(hopsTable)
-            self.display_result(d, self._pointG, pointT)
-            return pointT
+        self.add_rows_to_table(d, hopsTable, hops)
+        print(hopsTable)
+        self.display_result(d, self._pointG, pointT)
+        return pointT
 
+    def add_rows_to_table(self, d, hopsTable, hops):
+        for j in range(0, self._n):
+            row = []
+            if d % self._n > 0:
+                value = int(d / self._n) + 1
+            else:
+                value = int(d / self._n)
+            for i in range(0, value):
+                try:
+                    row.append(hops[i][j])
+                except:
+                    row.append("")
+            hopsTable.add_row(row)
 
     def fast_multiply(self, d):
         table = prettytable.PrettyTable(["step#", "bit", "double", "& add (bit = 1)"])
@@ -93,12 +104,14 @@ class EllipticCurve():
             dInBinary = str(bin(d).replace("0b", ""))
             baseChangeStr = baseChangeStr + str(d) + "|Base10 = " + dInBinary + "|Base2"
             table.add_row(["[0]", "1", "[0G + 0G = 0G]", "[0G + 1G = 1G]"])
-            pointT = Point(self.pointG.get_x(), self._pointG.get_y())
+            pointT = Point(self._pointG.get_x(), self._pointG.get_y())
             q = 1;
             p = 1
             for i in range(1, len(dInBinary)):
                 bit = int(dInBinary[i])
-                row = [str(i), str(bit)]
+                row = []
+                row.append(str(i))
+                row.append(str(bit))
                 rowContent = str(q) + "G+" + str(q) + "G="
                 q = q + q
                 rowContent = rowContent + str(q) + "G"
@@ -131,25 +144,25 @@ class EllipticCurve():
             Rx = (s * s - pointG.get_x() - pointQ.get_x()) % self._p
             Ry = (s * (pointG.get_x() - Rx) - pointG.get_y()) % self._p
             returnValue = Point(Rx, Ry)
-            return returnValue
+        return returnValue
 
     def double(self, pointG):
         if self._pointG == EllipticCurve.POINT_AT_INFINITY:
-            returnValue = self.pointG
+            returnValue = self._pointG
         else:
             s = (3 * pow(pointG.get_x(), 2, self._p) + self._a) % self._p * \
                 self.mod_inverse(2 * pointG.get_y(), self._p)
             Rx = (s * s - pointG.get_x() - pointG.get_x()) % self._p
             Ry = (s * (pointG.get_x() - Rx) - pointG.get_y()) % self._p
             returnValue = Point(Rx, Ry)
-            return returnValue
+        return returnValue
 
     def is_point_on_curve(self, pointG: Point):
         return (pointG.get_y() * pointG.get_y()) % self._p == \
             (pointG.get_x() * pointG.get_x() * pointG.get_x() + (self._a * pointG.get_x() + self._b)) % self._p
 
     def is_inverse(self, pointG, pointT):
-        return self._p == (pointT.get_y() + pointG.get_y()) and pointG.get_x() == pointT.get_x()
+        return (self._p == (pointT.get_y() + pointG.get_y()) and pointG.get_x() == pointT.get_x())
 
     def find_all_points_on_curve(self):
         pointsTable = prettytable.PrettyTable("")
@@ -185,7 +198,7 @@ class EllipticCurve():
         pointT = EllipticCurve.POINT_AT_INFINITY
         while n < self._orderE:
             if not self.is_inverse(self._pointG, pointT):
-                if self.pointG == pointT:
+                if self._pointG == pointT:
                     pointT = self.double(self._pointG)
                 else:
                     pointT = self.add(self._pointG, pointT)
@@ -220,7 +233,7 @@ class EllipticCurve():
     def mod_inverse(self, c, p):
         inverse = -1
         for numb in range(1, p):
-            if ((c % p) * (numb % p)) % p == 1:
+            if (((c % p) * (numb % p)) % p == 1):
                 inverse = numb
                 break
         return inverse
@@ -233,26 +246,28 @@ class EllipticCurve():
         return self.__str__()
 
     def __str__(self):
-        return "y^2 <congruent> x^3 + " + str(self._a) + "x + " + str(self._b) + " mod " + str(self._p)
+        return f"y^2 <congruent> x^3 + {self._a}x + {self._b} mod {self._p}"
+
 
 
 class Driver():
     def run_app(self):
-
-        ec = self.handle_elliptic_curve_input()
         while True:
-            entry = input("> what do you want to do? (s:low hops, f:ast hops w/ double & add, c:hange curve, e:xit)\n")
+            ec = self.handle_elliptic_curve_input()
+            while True:
+                entry = input(
+                    "> what do you want to do? (s:low hops, f:ast hops w/ double & add, c:hange curve, e:xit)\n")
 
-            if entry == "s":
-                self.handle_point_hopping_input("slow", ec)
-            elif entry == "f":
-                self.handle_point_hopping_input("fast", ec)
-            elif entry == "c":
-                break
-            elif entry == "e":
-                exit()
-            else:
-                print("invalid input.")
+                if entry == "s":
+                    self.handle_point_hopping_input("slow", ec)
+                elif entry == "f":
+                    self.handle_point_hopping_input("fast", ec)
+                elif entry == "c":
+                    break
+                elif entry == "e":
+                    exit()
+                else:
+                    print("Invalid input.")
 
     def handle_elliptic_curve_input(self):
         ec = None
@@ -260,29 +275,30 @@ class Driver():
         while True:
             try:
                 entry = input("> please enter a, b, & p (E: y^2 <congruent> x^3 + ax + b mod p), or e:xit\n")
-                if entry.lower() == "e":
-                    break
+                if entry == "e":
+                    exit()
                 elif ' ' in entry:
-                    a, b, p = map(int, entry.split(' '))
-
+                    a, b, p = entry.split(' ')
                     if EllipticCurve.is_non_singular(int(a), int(b)):
                         ec = EllipticCurve(a, b, p)
+                        break
                     else:
-                        print("invalid entry:  singular elliptic curve")
-                        continue
+                        print("Invalid entry: singular elliptic curve")
+                else:
+                    print("Invalid input(usage : a b p where E: y^2 <congruent> x^3 + ax + b mod p)")
+            except ValueError:
+                print("Invalid input(usage : a b p where E: y^2 <congruent> x^3 + ax + b mod p)")
 
-                    while True:
-                        try:
-                            if not self.handle_generator_point_input(ec):
-                                flag = True
-                                break
-                            else:
-                                break
-                        except:
-                            print("invalid input.")
+        while True:
+            try:
+                if not self.handle_generator_point_input(ec):
+                    flag = True
+                    break
+                else:
                     break
             except:
-                print("invalid input(usage : a b p where E: y^2 <congruent> x^3 + ax + b mod p)")
+                print("Invalid input.")
+
         if flag:
             exit()
         return ec
@@ -291,24 +307,22 @@ class Driver():
         flag = True
         while True:
             entry = input("> Please enter Generator Point x & y coordinates, or e:exit\n")
-            if entry.lower() == "e":
+            if entry == "e":
                 flag = False
                 break
+            elif ' ' not in entry:
+                print("Invalid input.")
+                continue
             else:
-                if ' ' not in entry:
-                    print("Invalid input: Please provide both x and y coordinates separated by a space.")
-                    continue
                 x, y = entry.split(' ')
                 try:
-
                     pointG = Point(x, y)
                     if not ec.update(pointG):
-                        print("Point is not on the curve.")
+                        print("Point not on curve.")
                     else:
                         break
-                except ValueError:
-                    print("Invalid input: Please enter valid numeric coordinates.")
-
+                except:
+                    print("Invalid input.")
         return flag
 
     def handle_point_hopping_input(self, type, ec: EllipticCurve):
@@ -319,14 +333,17 @@ class Driver():
                     ec.slow_multiply(d)
                     break
                 elif type == "fast":
-                    if d == ec.get_n():
+                    if d <= ec.get_n():
                         ec.fast_multiply(d)
                         break
                     else:
                         print("# of Point hops d must be <= " + str(
                             ec.get_n()) + " (i.e. n, the # of points in cyclic subgroup)")
             except:
-                print("invalid input. ")
+                print("Invalid input.")
 
 
-Driver.run_app()
+# Instantiate Driver class
+driver = Driver()
+# Call run_app() method on the instance
+driver.run_app()
