@@ -81,4 +81,7 @@ where
 * **n** is the **order of the curve** (the number of all its points)
 * **h** is the curve **cofactor** (the number of non-overlapping **subgroups** of points, which together hold all curve points)
 * **r** is the **order of the subgroups** (the number of points in each subgroup, including the _**infinity**_ point for each subgroup)
-
+----
+This is the concept of Elliptic Curve Cryptography that I applied on my Algorithm. Thank you 🖐️
+----
+---
